@@ -1,4 +1,4 @@
-package com.example.viikko1.domain
+package com.example.viikko1.model
 
 data class Task(
     val id: Int,
@@ -6,5 +6,5 @@ data class Task(
     val description: String,
     val priority: Int,
     val dueDate: String,
-    val done: Boolean
+    val done: Boolean = false
 )

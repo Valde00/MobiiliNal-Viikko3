@@ -1,5 +1,7 @@
 package com.example.viikko1.domain
 
+import com.example.viikko1.model.Task
+
 fun addTask(list: List<Task>, task: Task): List<Task> = list + task
 
 fun toggleDone(list: List<Task>, id: Int): List<Task> =
