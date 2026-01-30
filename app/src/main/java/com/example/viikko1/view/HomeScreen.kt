@@ -46,6 +46,8 @@ fun HomeScreen(
     val filtered = filterByDone(tasks, showDone)
     val displayedTasks = sortByDueDate(filtered, ascending)
 
+    var editingTask by remember { mutableStateOf<Task?>(null) }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -104,46 +106,50 @@ fun HomeScreen(
             contentPadding = PaddingValues(vertical = 8.dp)
         ) {
             items(displayedTasks, key = { it.id }) { task ->
-                TaskRow(
-                    task = task,
-                    onToggle = { viewModel.toggleDone(it) },
-                    onRemove = { viewModel.removeTask(it) }
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable { editingTask = task }
+                        .padding(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(text = task.title, style = MaterialTheme.typography.titleMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Row {
+                            Text(text = "Due: ${task.dueDate}", style = MaterialTheme.typography.bodySmall)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = "Priority: ${task.priority}", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Checkbox(
+                        checked = task.done,
+                        onCheckedChange = { viewModel.toggleDone(task.id) }
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(onClick = { viewModel.removeTask(task.id) }) {
+                        Text("Remove")
+                    }
+                }
             }
         }
     }
-}
 
-@Composable
-fun TaskRow(task: Task, onToggle: (Int) -> Unit, onRemove: (Int) -> Unit) {
-    Row(
-        modifier = Modifier
-            .clickable { onToggle(task.id) }
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = task.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(4.dp))
-            Row {
-                Text(text = "Due: ${task.dueDate}", style = MaterialTheme.typography.bodySmall)
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "Priority: ${task.priority}", style = MaterialTheme.typography.bodySmall)
+    editingTask?.let { task ->
+        DetailScreen(
+            task = task,
+            onDismiss = { editingTask = null },
+            onSave = { updated -> viewModel.updateTask(updated) },
+            onRemove = { id ->
+                viewModel.removeTask(id)
+                editingTask = null
             }
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Checkbox(
-            checked = task.done,
-            onCheckedChange = { onToggle(task.id) }
         )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Button(onClick = { onRemove(task.id) }) {
-            Text("Remove")
-        }
     }
 }
 
